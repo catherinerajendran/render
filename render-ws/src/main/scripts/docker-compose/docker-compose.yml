@@ -4,7 +4,7 @@ services:
     image: ${RENDER_WS_IMAGE}
     user: ${JETTY_RUN_AS_USER_AND_GROUP_IDS}
     ports:
-      - "8080:8080"
+      - "8070:8070"
     volumes:
       - ${LOCAL_RENDER_WS_LOGS_DIR}:/var/lib/jetty/logs
       - /groups:/groups:ro,shared

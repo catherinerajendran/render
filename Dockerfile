@@ -107,9 +107,11 @@ RUN ls -al $JETTY_BASE/* && \
 COPY --from=archive /root/render-lib/render-ws-*.war webapps/render-ws.war
 COPY render-ws/src/main/scripts/docker /render-docker
 
+COPY render-ws/src/main/webapp/view/favicon.ico .
+
 EXPOSE 8080
 
-ENV JAVA_OPTIONS="-Xms3g -Xmx3g -server -Djava.awt.headless=true" \
+ENV JAVA_OPTIONS="-Xms128g -Xmx128g -server -Djava.awt.headless=true" \
     JETTY_THREADPOOL_MIN_THREADS="10" \
     JETTY_THREADPOOL_MAX_THREADS="200" \
     LOG_ACCESS_ROOT_APPENDER="STDOUT" \
@@ -123,9 +125,19 @@ ENV JAVA_OPTIONS="-Xms3g -Xmx3g -server -Djava.awt.headless=true" \
     MONGO_AUTH_DB="" \
     MONGO_CONNECTION_STRING="" \
     MONGO_CONNECTION_STRING_USES_AUTH="" \
-    NDVIZHOST="" \
+    NDVIZHOST="cbi11:9090" \
     NDVIZPORT="" \
     NDVIZ_URL="" \
+    #VIEW_OPENSEADRAGON_HOST_AND_PORT="http://bioimg-wkst10.stjude.sjcrh.local:8080/render-ws/view/openseadragon.html" \
+    VIEW_OPENSEADRAGON_HOST_AND_PORT="http://cbi06.stjude.sjcrh.local:8080/render-ws/view/openseadragon.html" \
+    #VIEW_OPENSEADRAGON_HOST_AND_PORT="http://cbi08.stjude.org:8080/render-ws/view/openseadragon.html" \
+    VIEW_DATA_PREP="/research/sharedresources/cbi/common/derived_data_preparation_code/data_preparation.py" \
+    VIEW_DATA_PREPSH="/research/sharedresources/cbi/common/derived_data_preparation_code/MagickSlicer/magick-slicer.sh" \
+    #VIEW_OPENSEADRAGON_DATA_HOST="http://bioimg-wkst10.stjude.org:5000/sharedresources/cbi/common/derived_data_for_visualization/derived_perm/openseadragon/" \
+    VIEW_OPENSEADRAGON_DATA_HOST="http://cbi06.stjude.sjcrh.local:5000/sharedresources/cbi/common/derived_data_for_visualization/derived_perm/openseadragon/" \
+    #VIEW_OPENSEADRAGON_DATA_HOST="http://cbi08.stjude.org:5000/sharedresources/cbi/common/derived_data_for_visualization/derived_perm/openseadragon/" \
+    VIEW_OPENSEADRAGON_DATA_SOURCE_FOLDER="/research/sharedresources/cbi/common/derived_data_for_visualization/derived_perm/source/" \
+    VIEW_OPENSEADRAGON_DATA_DESTINATION_FOLDER="/research/sharedresources/cbi/common/derived_data_for_visualization/derived_perm/openseadragon/" \
     VIEW_CATMAID_HOST_AND_PORT="" \
     VIEW_DYNAMIC_RENDER_HOST_AND_PORT="" \
     VIEW_RENDER_STACK_OWNER="" \

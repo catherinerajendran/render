@@ -1,0 +1,339 @@
+<head>
+    <style>
+        .slidecontainer {
+          width: 100%;
+        }
+
+        .slider {
+          -webkit-appearance: none;
+          width: 100%;
+          height: 25px;
+          background: #d3d3d3;
+          outline: none;
+          opacity: 0.7;
+          -webkit-transition: .2s;
+          transition: opacity .2s;
+        }
+
+        .slider:hover {
+          opacity: 1;
+        }
+
+        .slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 25px;
+          height: 25px;
+          background: #04AA6D;
+          cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+          width: 25px;
+          height: 25px;
+          background: #04AA6D;
+          cursor: pointer;
+        }
+
+        .image-ruler{
+  background-color:red;
+ width: 50px;
+  height: 50px;
+}
+
+.highlight {
+  opacity: 0.4;
+    filter: alpha(opacity=40);
+    outline: 12px auto #0A7EbE;
+    outline-color: rgb(10, 126, 190);
+    outline-style: auto;
+    outline-width: 12px;
+    background-color: white;
+}
+
+.box-snap {
+    top:20%;
+    right: 20%;
+    background-color:#3956ad;
+    color: #fff;
+    border: 2px solid #000000;
+    border-radius:10px; 
+    padding:15px;
+    min-height:15px; 
+    min-width: 200px;
+    font-size: 18px;
+  }
+
+  .box-snap:hover {
+      background-color:#0A7EbE;
+      transition: 0.7s;
+  }
+
+    </style>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<!--<table><tbody><tr><td>Top Left</td><td><input type="text" id="point_1_button"/></td><td><button name="point_1_button" class="get_point1_event">get point 1</button></td>
+    <td><span id="point_1_button_span"></span></td>
+</tr>
+<tr><td>Top Right</td><td><input type="text" id="point_2_button"/></td><td><button name="point_2_button" class="get_point2_event">get point 2</button></td>
+    <td><span id="point_2_button_span"></span></td>
+</tr>
+<tr><td>Bottom Left</td><td><input type="text" id="point_3_button"/></td><td><button name="point_3_button" class="get_point3_event">get point 3</button></td>
+    <td><span id="point_3_button_span"></span></td>
+</tr>
+<tr><td>Botton Right</td><td><input type="text" id="point_4_button"/></td><td><button name="point_4_button" class="get_point4_event">get point 4</button></td>
+    <td><span id="point_4_button_span"></span></td>
+</tr>
+<tr><td><button id="box-crop">Preview</button></td><td></td><td><a id="url_box" href="" target="_blank"></a></td></tr>
+</tbody></table> -->
+
+
+<br>
+
+<!-- <button id="box-snap" style="float: right;" class="box-snap" title="Snaps and opens the image url in new window">Snap</button> -->
+<!-- <br><a id="url_box" href="" target="_blank"></a> -->
+
+    <div id="openseadragon1" style="margin: 5%;">
+
+        <p>Z slice: <span id="index_no">1</span>
+          <button id="box-snap" style="float: right;" display="inline-block" class="box-snap" title="Snaps and opens the image url in new window">Snap</button></p>        
+
+    </div>
+
+    <script src="../script/openseadragon-bin-4.1.0/openseadragon.js"></script>
+    <!--<script src="https://openseadragon.github.io/openseadragon/openseadragon.min.js"></script> -->
+    <script type="text/javascript">
+
+
+
+$( document ).ready(function() {
+
+var name_button = "";
+    $( ".get_point1_event" ).on('click',function() {
+  name_button = this.name;
+//alert(name_button);
+
+});
+
+$( ".get_point2_event" ).on('click',function() {
+  name_button = this.name;
+//alert(name_button);
+});
+
+
+$( ".get_point3_event" ).on('click',function() {
+  name_button = this.name;
+//alert(name_button);
+});
+
+
+$( ".get_point4_event" ).on('click',function() {
+  name_button = this.name;
+//alert(name_button);
+
+
+});
+
+
+  viewer.addHandler('canvas-click', function(event) {
+
+  // The canvas-click event gives us a position in web coordinates.
+    var webPoint = event.position;
+
+    // Convert that to viewport coordinates, the lingua franca of OpenSeadragon coordinates.
+    var viewportPoint = viewer.viewport.pointFromPixel(webPoint);
+var imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
+if(name_button!=""){
+//alert(name_button);
+
+$('#'+name_button).val(imagePoint);
+$('#'+name_button+'_span').text(viewportPoint);
+name_button="";
+console.log(viewportPoint);
+
+}
+  });
+
+
+
+});
+
+
+
+
+
+var url = new URL(window.location.href);
+var urlHost = url.host;
+var owner = url.searchParams.get("owner");
+var project = url.searchParams.get("project");
+var stack = url.searchParams.get("stack");
+var minz = url.searchParams.get("minz");
+var maxz = url.searchParams.get("maxz");
+var datahost = url.searchParams.get("datahost");
+let params = new URLSearchParams(document.location.search);
+
+fetch("http://"+urlHost+"/render-ws/v1/owner/"+owner+"/project/"+project+"/stack/"+stack+"/bounds")
+	.then(response => response.json())
+	.then(response => minx = response.minX)
+	.then(response => miny = response.minY)
+	.catch(err => console.error(err));
+
+fetch("http://"+urlHost+"/render-ws/v1/owner/"+owner+"/project/"+project+"/stack/"+stack+"/bounds")
+	.then(response => response.json())
+	.then(response => miny = response.minY)
+	.catch(err => console.error(err));
+
+//var $i = "1";
+var arr = [];
+var IMAGE_RULER_HIGHLIGHT = "image-ruler";
+for (var i = parseInt(minz); i < parseInt(maxz)+1; i++) {
+    arr.push(datahost+owner+'/'+project+'/'+stack+'/'+owner+'_'+project+'_'+stack+'_'+i+'.jpg.dzi');
+}
+
+var viewer = OpenSeadragon({
+        id: "openseadragon1",
+        prefixUrl: "../script/openseadragon-bin-4.1.0/images/",
+        tileSources: arr,
+        sequenceMode: true,
+        preserveViewport: true,
+        showReferenceStrip: true,
+	      showNavigator:  true,
+        setNumZoomLevels: 3
+        //minZoomLevel: 0,
+        //maxZoomLevel: 10
+    });
+
+  //  console.log(viewer.currentPage._sequenceIndex);
+
+  viewer.addHandler('page', function(event) {
+//alert(viewer._sequenceIndex);
+$('#index_no').text(viewer._sequenceIndex+1);
+
+  });
+
+  $(document).on('keypress',function(e) {
+    if(e.which == 60) {
+        viewer.goToPage(viewer._sequenceIndex-10);
+    }
+    if(e.which == 62){
+        viewer.goToPage(viewer._sequenceIndex+10);
+    }
+    if(e.which == 44){
+        viewer.goToPage(viewer._sequenceIndex-1);
+    }
+    if(e.which == 46){
+        viewer.goToPage(viewer._sequenceIndex+1);
+    }
+
+});
+var overlay = false;
+
+document.querySelector('#box-snap').addEventListener('click', function(){
+  var current_z = document.getElementById("index_no").innerText;
+  var zoom = viewer.viewport.getZoom(true);
+  var imageZoom = viewer.viewport.viewportToImageZoom(zoom);
+  var viewportBounds = viewer.viewport.getBounds();
+  var tiledImage = viewer.world.getItemAt(0); // Assuming you want the first (or only) image
+  var imageBounds = tiledImage.viewportToImageRectangle(viewportBounds); 
+  
+  var url_x = parseFloat(minx)+parseFloat(imageBounds['x'].toFixed(0));
+  var url_y = parseFloat(miny)+parseFloat(imageBounds['y'].toFixed(0));
+
+  //console.log("minx:",minx,",miny:",miny,"x1:",x1,",y1:",y1,",minz:",minz,",url_x:",url_x,",url_y:",url_y,",imageBounds:",imageBounds,",imageBounds['x']:",imageBounds['x'].toFixed(0),",parse:",parseFloat(imageBounds['x'].toFixed(0)));
+
+  //$("#url_box").attr("href","http://"+urlHost+"/render-ws/v1/owner/"+owner+"/project/"+project+"/stack/"+stack+"/z/"+current_z+"/box/"+url_x.toFixed(1)+","+url_y.toFixed(1)+","+imageBounds['width'].toFixed(0)+","+imageBounds['height'].toFixed(0)+",1/jpeg-image?scale=1");
+  //$("#url_box").text("http://"+urlHost+"/render-ws/v1/owner/"+owner+"/project/"+project+"/stack/"+stack+"/z/"+current_z+"/box/"+url_x.toFixed(1)+","+url_y.toFixed(1)+","+imageBounds['width'].toFixed(0)+","+imageBounds['height'].toFixed(0)+",1/jpeg-image?scale=1");
+  window.open("http://"+urlHost+"/render-ws/v1/owner/"+owner+"/project/"+project+"/stack/"+stack+"/z/"+current_z+"/box/"+url_x.toFixed(1)+","+url_y.toFixed(1)+","+imageBounds['width'].toFixed(0)+","+imageBounds['height'].toFixed(0)+",1/jpeg-image?scale=1", "_blank");
+
+});
+
+/*document.querySelector('#box-crop').addEventListener('click', function() {
+    var top_left_x = parseFloat(document.getElementById("point_1_button").value.split(',')[0].substring(1));
+    var top_left_y = parseFloat(document.getElementById("point_1_button").value.split(',')[1].slice(0,-1));
+    var top_right_x = parseFloat(document.getElementById("point_2_button").value.split(',')[0].substring(1));
+    var top_right_y = parseFloat(document.getElementById("point_2_button").value.split(',')[1].slice(0,-1));
+    var bottom_left_x = parseFloat(document.getElementById("point_3_button").value.split(',')[0].substring(1));
+    var bottom_left_y = parseFloat(document.getElementById("point_3_button").value.split(',')[1].slice(0,-1));
+    var bottom_right_x = parseFloat(document.getElementById("point_4_button").value.split(',')[0].substring(1));
+    var bottom_right_y = parseFloat(document.getElementById("point_4_button").value.split(',')[1].slice(0,-1));
+
+    var top_left_x_view = parseFloat(document.getElementById("point_1_button_span").innerText.split(',')[0].substring(1));
+    var top_left_y_view= parseFloat(document.getElementById("point_1_button_span").innerText.split(',')[1].slice(0,-1));
+    var top_right_x_view = parseFloat(document.getElementById("point_2_button_span").innerText.split(',')[0].substring(1));
+    var top_right_y_view = parseFloat(document.getElementById("point_2_button_span").innerText.split(',')[1].slice(0,-1));
+    var bottom_left_x_view = parseFloat(document.getElementById("point_3_button_span").innerText.split(',')[0].substring(1));
+    var bottom_left_y_view = parseFloat(document.getElementById("point_3_button_span").innerText.split(',')[1].slice(0,-1));
+    var bottom_right_x_view = parseFloat(document.getElementById("point_4_button_span").innerText.split(',')[0].substring(1));
+    var bottom_right_y_view = parseFloat(document.getElementById("point_4_button_span").innerText.split(',')[1].slice(0,-1));
+
+    var final_x;
+    var final_y;
+    var final_x_view;
+    var final_y_view;
+    if(top_left_x <= bottom_left_x){
+        final_x = top_left_x;
+        final_x_view = top_left_x_view;
+    } else {
+        final_x = bottom_left_x;
+        final_x_view = bottom_left_x_view;
+    }
+
+    if(top_left_y <= top_right_y){
+        final_y = top_left_y;
+        final_y_view = top_left_y_view;
+    } else {
+        final_y = top_right_y;
+        final_y_view = top_right_y_view;
+    }
+    var width;
+    var height;
+    var width_view;
+    var height_view;
+    //var width_x;
+    //var height_y;
+    if(top_right_x>=bottom_right_x){
+        width = top_right_x - final_x;
+        width_view = top_right_x_view - final_x_view;
+    }else{
+        width = bottom_right_x - final_x;
+        width_view = bottom_right_x_view - final_x_view;
+    }
+
+    if(bottom_right_y>=bottom_left_y){
+        height = bottom_right_y - final_y;
+        height_view = bottom_right_y_view - final_y_view;
+    }else{
+        height = bottom_left_y - final_y;
+        height_view = bottom_left_y_view - final_y_view;
+    }
+
+    if (overlay) {
+        viewer.removeOverlay("runtime-overlay");
+    } else {
+       var elt = document.createElement("div");
+        elt.id = "runtime-overlay";
+        elt.className = "highlight";
+        viewer.addOverlay({
+            element: elt,
+           location: new OpenSeadragon.Rect(final_x_view, final_y_view, width_view, height_view)
+        });
+
+//alert("hi");
+
+var current_z = document.getElementById("index_no").innerText;
+var url_x = parseFloat(minx)+parseFloat(final_x);
+var url_y = parseFloat(miny)+parseFloat(final_y);
+//$("#url_box").attr("href","http://"+urlHost+"/render-ws/v1/owner/"+owner+"/project/"+project+"/stack/"+stack+"/z/"+current_z+"/box/"+url_x.toFixed(1)+","+url_y.toFixed(1)+","+width.toFixed(0)+","+height.toFixed(0)+",1/jpeg-image?scale=1");
+//$("#url_box").text("http://"+urlHost+"/render-ws/v1/owner/"+owner+"/project/"+project+"/stack/"+stack+"/z/"+current_z+"/box/"+url_x.toFixed(1)+","+url_y.toFixed(1)+","+width.toFixed(0)+","+height.toFixed(0)+",1/jpeg-image?scale=1");
+//alert("http://bioimg-wkst10:8080/render-ws/v1/owner/"+owner+"/project/"+project+"/stack/"+stack+"/z/"+current_z+"/box/"+url_x.toFixed(1)+","+url_y.toFixed(1)+","+width.toFixed(0)+","+height.toFixed(0)+",1/jpeg-image?scale=1");
+    }
+    overlay = !overlay;
+});*/
+
+
+
+
+
+</script>

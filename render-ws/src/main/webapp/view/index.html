@@ -3,6 +3,8 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
     <title>Render Web Service Views</title>
+    
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link type="text/css" href="../css/render.css" rel="stylesheet" />
     <script type="text/javascript" src="../script/jquery-2.1.1.min.js"></script>
     <script type="text/javascript" src="../script/janelia-render.js?v=20180611_001"></script>
@@ -61,7 +63,14 @@
           renderUi.loadData();
 
           renderWebServiceViews.setUpHostData('dynamicRenderHost');
+          renderWebServiceViews.setUpHostData('openseadragonHost');
+          renderWebServiceViews.setUpHostData('data_prep');
+          renderWebServiceViews.setUpHostData('openseadragonPythonFile');
+          renderWebServiceViews.setUpHostData('openseadragonMagicSlicer');
           renderWebServiceViews.setUpHostData('catmaidHost');
+          renderWebServiceViews.setUpHostData('openseadragonDataHost');
+          renderWebServiceViews.setUpHostData('openseadragonDataSourceFolder');
+          renderWebServiceViews.setUpHostData('openseadragonDataDestinationFolder');
           renderWebServiceViews.setUpHostData('ndvizHost');
 
           new JaneliaMatchServiceDataUI(
@@ -106,6 +115,19 @@
                  onchange="renderWebServiceViews.updateParameter('dynamicRenderHost', this.value)">
         </td>
       </tr>
+
+
+      <tr>
+        <td>
+        </td>
+        <td>
+          <span class="selectSpan">OPENSEADRAGON Host (e.g. 'renderer-openseadragon:8000'):</span>
+          <input id="openseadragonHost" title="openseadragonHost" type="text" style="width:30em"
+                 onchange="renderWebServiceViews.updateParameter('openseadragonHost', this.value)">
+        </td>
+      </tr>
+
+
 
       <tr>
         <td>

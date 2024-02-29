@@ -68,6 +68,10 @@ var JaneliaScriptUtilities = function() {
         return this.getCatmaidUrl(catmaidBaseUrl, stackId, stackVersion, centerX, centerY, z, scaleLevel);
     };
 
+    this.prepareOpenseadragonDataUrl = function(){
+
+
+    };
     this.getSelectedValue = function(selectId) {
         var selectElement = document.getElementById(selectId);
         return selectElement.options[selectElement.selectedIndex].value;
@@ -165,8 +169,12 @@ var JaneliaQueryParameters = function() {
     var re = /([^&=]+)=([^&]*)/g;
     var m;
     while (m = re.exec(queryString)) {
+        console.log(m);
         this.map[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
     }
+    console.log(queryString);
+    console.log("helloooooo")
+    console.log(this.map);
 };
 
 JaneliaQueryParameters.prototype.getSearch = function() {
@@ -436,9 +444,15 @@ var JaneliaRenderServiceDataUI = function(queryParameters, ownerSelectId, projec
     this.util = new JaneliaScriptUtilities();
     this.shortbaseUrl = this.util.getShortRenderHost();
     this.queryParameters = queryParameters;
+    this.openseadragonHost = queryParameters.map['openseadragonHost'];
+    this.data_prep = queryParameters.map['data_prep'];
+    this.data_prepsh = queryParameters.map['data_prepsh'];
     this.catmaidHost = queryParameters.map['catmaidHost'];
     this.ndvizHost = queryParameters.map['ndvizHost'];
     this.dynamicRenderHost = queryParameters.map['dynamicRenderHost'];
+    this.openseadragonDataHost = queryParameters.map['openseadragonDataHost'];
+    this.openseadragonDataSourceFolder = queryParameters.map['openseadragonDataSourceFolder'];
+    this.openseadragonDataDestinationFolder = queryParameters.map['openseadragonDataDestinationFolder'];
 
     this.renderServiceData = new JaneliaRenderServiceData(queryParameters.map[ownerSelectId],
                                                           queryParameters.map[projectSelectId],
@@ -449,6 +463,7 @@ var JaneliaRenderServiceDataUI = function(queryParameters, ownerSelectId, projec
     var self = this;
 
     var setStack = function(selectedStack) {
+        console.log("selStack:",selectedStack);
         self.renderServiceData.stack = selectedStack;
         self.queryParameters.updateParameterAndLink(stackSelectId, selectedStack, urlToViewId);
     };
@@ -530,6 +545,19 @@ JaneliaRenderServiceDataUI.prototype.isNdvizHostDefined = function() {
 
 };
 
+JaneliaRenderServiceDataUI.prototype.isOpenseadragonHostDefined = function() {
+    //console.log("this is openseadragon");
+    //console.log(this.openseadragonHost);
+    return typeof this.openseadragonHost !== 'undefined';
+};
+
+JaneliaRenderServiceDataUI.prototype.isOpenseadragonDataHostDefined = function() {
+   // console.log("this is openseadragonDataHost");
+    //console.log(this.openseadragonDataHost);
+    return typeof this.openseadragonDataHost !== 'undefined';
+};
+
+
 JaneliaRenderServiceDataUI.prototype.isCatmaidHostDefined = function() {
     return typeof this.catmaidHost !== 'undefined';
 };
@@ -543,6 +571,12 @@ JaneliaRenderServiceDataUI.prototype.buildStackQueryParameters = function(owner,
         ['renderStackProject', project],
         ['renderStack', stack],
         ['dynamicRenderHost', this.dynamicRenderHost],
+        ['openseadragonHost', this.openseadragonHost],
+        ['data_prep', this.data_prep],
+        ['data_prepsh', this.data_prepsh],
+        ['openseadragonDataHost', this.openseadragonDataHost],
+        ['openseadragonDataSourceFolder', this.openseadragonDataSourceFolder],
+        ['openseadragonDataDestinationFolder', this.openseadragonDataDestinationFolder],
         ['catmaidHost', this.catmaidHost],
         ['ndvizHost', this.ndvizHost]
     ];
@@ -556,8 +590,23 @@ JaneliaRenderServiceDataUI.prototype.buildStackQueryParameters = function(owner,
             parameters[key] = value;
         }
     }
-
     return $.param(parameters);
+};
+var osd_btnTxt=''
+JaneliaRenderServiceDataUI.prototype.availStack = function (osd_path) {
+    $.ajax({
+                url: osd_path,
+                type: 'HEAD',
+                async: false,
+                error: function() 
+                {
+                    osd_btnTxt = "Prepare data for openseadragon";
+                },
+                success: function() 
+                {
+                    osd_btnTxt = "Regenerate data for openseadragon"
+                }
+            });
 };
 
 /**
@@ -579,6 +628,7 @@ JaneliaRenderServiceDataUI.prototype.buildStackQueryParameters = function(owner,
  * @param stackInfo.stats.nonIntegralSectionCount
  * @param stackInfo.stats.tileCount
  * @param stackInfo.stats.transformCount
+ * @param stackInfo.stats.channelNames[0]
  * @param includeProject
  * @param includeActions
  */
@@ -628,13 +678,36 @@ JaneliaRenderServiceDataUI.prototype.getStackSummaryHtml = function(ownerUrl, st
 
     var detailsQueryString = '?' + this.buildStackQueryParameters(stackId.owner, stackId.project, stackId.stack);
     //noinspection HtmlUnknownTarget
-    var detailsLinkPrefix = '<a target="_blank" href="stack-details.html' + detailsQueryString + '">';
+    var detailsLinkPrefix = '<a id="StackName" target="_blank" href="stack-details.html' + detailsQueryString + '">';
     var detailsLink = detailsLinkPrefix + stackId.stack  +'</a>';
 
     var linksHtml = '<div class="dropdown">' +
                     '<button class="dropbtn">View</button>' +
                     '<div class="dropdown-content">' +
                     '<a target="_blank" href="' + baseStackUrl + '">Metadata</a> ';
+    
+    if (this.isOpenseadragonHostDefined()) {
+            var openseadragonBaseUrl = 'http://' + this.openseadragonHost;
+            //var openseadragonUrl = this.util.getCenteredCatmaidUrl(openseadragonBaseUrl, stackId, version, bounds, bounds.minZ, 8);
+            var openseadragonUrl = 'openseadragon.html?owner='+stackId.owner+'&project='+stackId.project+'&stack='+stackId.stack+'&minz='+bounds.minZ+'&maxz='+bounds.maxZ+'&datahost='+this.openseadragonDataHost;
+            var osd_path = this.openseadragonDataHost +stackId.owner+ '/' +stackId.project + '/' +stackId.stack + '/' + stackId.owner +'_'+ stackId.project +'_'+ stackId.stack +'_1.jpg.dzi';
+            this.availStack(osd_path);
+            if(!("OpenseadragonData" in stackInfo)){
+                // linksHtml = linksHtml + ' <a target="_blank" href="' + openseadragonUrl + '">Prepare data for Openseadragon</a>';
+               //linksHtml = linksHtml + '<a href="" class="btn" onclick="return check()">Prepare Data for Openseadragon</a>';
+                    linksHtml = linksHtml + '<button class="btnClass" id="myBtn_'+stackId.stack+'" value="'+stackId.stack+'">'+osd_btnTxt+'</button>';
+                    linksHtml = linksHtml + '<input type="hidden" id="openseadragonDataHost" value="'+this.openseadragonDataHost+'">';
+                    linksHtml = linksHtml + '<input type="hidden" id="data_prep" value="'+this.data_prep+'">';
+                    linksHtml = linksHtml + '<input type="hidden" id="data_prepsh" value="'+this.data_prepsh+'">';
+                    linksHtml = linksHtml + '<input type="hidden" id="openseadragonDataSourceFolder" value="'+this.openseadragonDataSourceFolder+'">';
+                    linksHtml = linksHtml + '<input type="hidden" id="openseadragonDataDestinationFolder" value="'+this.openseadragonDataDestinationFolder+'">';
+                  linksHtml = linksHtml + ' <a target="_blank" href="' + openseadragonUrl + '">Openseadragon</a>';
+            }
+            else{
+                linksHtml = linksHtml + ' <a target="_blank" href="' + openseadragonUrl + '">Openseadragon</a>';
+            }
+        }
+
 
     if (this.isCatmaidHostDefined()) {
         var catmaidBaseUrl = 'http://' + this.catmaidHost;
@@ -659,9 +732,54 @@ JaneliaRenderServiceDataUI.prototype.getStackSummaryHtml = function(ownerUrl, st
     }
 
     if (this.isNdvizHostDefined()) {
-        var NDVIZUrl = 'http://' + this.ndvizHost + '/render/' + this.shortbaseUrl + '/' +
-                       stackId.owner + '/' + stackId.project + '/' + stackId.stack + '/';
-        linksHtml = linksHtml + ' <a target="_blank" href="' + NDVIZUrl + '">NdViz</a>';
+        var sourcePath = "render://http://" + this.shortbaseUrl + "/" + stackId.owner + "/" + stackId.project + "/" + stackId.stack + "/";
+        var channelcount = stackInfo.stats.channelNames.length   
+        var layerKey = ''
+        var layerValue = ''
+        var tempPath = ''
+        let concatenateData = [];
+
+        if (channelcount == 0){
+            layerValue = stackId.stack;
+            const jsonData = {
+                type: "image", 
+                source: sourcePath,
+                tab: "source",
+                name: stackId.stack
+            };
+            concatenateData.push(jsonData);
+        }
+        else{
+            for(let i = 0; i < channelcount; i++){
+                tempPath = sourcePath + stackInfo.stats.channelNames[i]
+                console.log(tempPath)
+                const jsonData = {
+                    type: "image", 
+                    source: tempPath,
+                    tab: "source",
+                    name: stackInfo.stats.channelNames[i]
+                };
+                concatenateData.push(jsonData);
+                layerValue=layerValue+`${stackInfo.stats.channelNames[i]},`
+                tempPath = ''
+            }
+        } 
+        console.log(concatenateData)
+
+        var neuroglancerSuffix = JSON.stringify({
+            layers: concatenateData,
+            selectedLayer: {
+            visible: true,
+            layer: layerValue
+            }
+            })
+
+        console.log((neuroglancerSuffix));
+
+        var ND_encodedUrl = encodeURI(neuroglancerSuffix);
+        var NDVIZUrl = 'http://' + this.ndvizHost + `/#!${ND_encodedUrl}`;
+
+        linksHtml = linksHtml + ' <a target="_blank" href=' + `${NDVIZUrl}` + '>NeuroGlancer</a>';
     }
 
     //noinspection HtmlUnknownTarget
@@ -707,3 +825,4 @@ JaneliaRenderServiceDataUI.prototype.getStackSummaryHtml = function(ownerUrl, st
            '  <td>' + linksHtml + '</td>\n' +
            '</tr>\n';
 };
+

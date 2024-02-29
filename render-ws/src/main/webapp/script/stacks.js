@@ -49,6 +49,7 @@ var RenderWebServiceProjectStacks = function(ownerSelectId, projectSelectId, mes
             this.updateActions = function() {
                 $('#' + self.stackActionsId).html(self.actionHtml);
                 $('#' + self.stackDeleteId).click(self.deleteStackWithName);
+                $('#' + self.stackDeleteId).click(self.deleteStackWithName);
             }
         };
 
@@ -63,7 +64,7 @@ var RenderWebServiceProjectStacks = function(ownerSelectId, projectSelectId, mes
                                                            false,
                                                            true);
             stackInfoSelect.append(summaryHtml);
-            new StackNameFunctions(projectStackMetaDataList[index].stackId.stack).updateActions();
+            new StackNameFunctions(projectStackMetaDataList[index].stackId.stack, ).updateActions();
         }
 
         stackInfoSelect.trigger("update");
